@@ -6,6 +6,8 @@
 #include <type_traits>
 #include <string>
 
+#include "move.hpp"
+
 namespace felix {
 
 /*
@@ -34,12 +36,12 @@ public:
 	Position() : current_position(0), mask(0), moves(0) {}
 
 	// Returns true if the column is playable.
-	bool canPlay(int col) const {
+	bool canPlay(Move col) const {
 		return (mask & top_mask(col)) == 0;
 	}
 
 	// Place a piece at the given column.
-	void play(int col) {
+	void play(Move col) {
 		current_position ^= mask;
 		mask |= mask + bottom_mask(col);
 		moves++;
@@ -48,7 +50,7 @@ public:
 	// Plays a seqence of moves.
 	int play(std::string seq) {
 		for(int i = 0; i < (int) seq.size(); i++) {
-			int col = seq[i] - '1';
+			Move col = seq[i] - '1';
 			if(col < 0 || col >= WIDTH || !canPlay(col) || isWinningMove(col)) {
 				return i;
 			}
@@ -57,7 +59,7 @@ public:
 		return seq.size();
 	}
 
-	bool isWinningMove(int col) const {
+	bool isWinningMove(Move col) const {
 		bitboard_t pos = current_position;
 		pos |= (mask + bottom_mask(col)) & column_mask(col);
 		return Position::alignment(pos);
@@ -98,17 +100,17 @@ private:
 	}
 
 	// Returns a bitmask with single 1 bit on corresponding to the top cell of the input column.
-	static bitboard_t top_mask(int col) {
+	static bitboard_t top_mask(Move col) {
 		return (bitboard_t(1) << (HEIGHT - 1)) << (col * (HEIGHT + 1));
 	}
 
 	// Returns a bitmask with single 1 bit on corresponding to the bottom cell of the input column.
-	static bitboard_t bottom_mask(int col) {
+	static bitboard_t bottom_mask(Move col) {
 		return bitboard_t(1) << (col * (HEIGHT + 1));
 	}
 
 	// Returns a bitmask with all the cells on the input column on.
-	static bitboard_t column_mask(int col) {
+	static bitboard_t column_mask(Move col) {
 		return ((bitboard_t(1) << HEIGHT) - 1) << (col * (HEIGHT + 1));
 	}
 };
