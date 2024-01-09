@@ -96,7 +96,7 @@ void Node::simulate() {
 Move Node::getBestMove() const {
 	double best_rate = 100;
 	Move best_move = -1;
-	for(int i = 0; i < Position::WIDTH; i++) {
+	for(int i = 0; i < list.total(); i++) {
 		// Pick the move that minimize opponent's win rate.
 		if(children[i]->winRate() < best_rate) {
 			best_rate = children[i]->winRate();
