@@ -10,20 +10,23 @@ namespace felix {
 
 class MoveList {
 public:
-	MoveList(Position* p) : pos(p), move(), head(0), tail(0) {}
+	MoveList() {}
+	MoveList(Position* p) : pos(p), move(), head(0), tail(0) {
+		for(int i = 0; i < Position::WIDTH; i++) {
+			if(pos->canPlay(i)) {
+				move[tail++] = i;
+			}
+		}
+	}
 
 	int size() const { return tail - head; }
 	bool empty() const { return head == tail; }
+	int total() const { return tail; }
 
 	void sort(); // Sort moves heuristically.
 
-	void addMove(Move m) {
-		move[tail++] = m;
-	}
-
-	Move nextMove() {
-		return move[head++];
-	}
+	Move nextMove() { return move[head++]; }
+	Move getMove(int i) const { return move[i]; }
 
 private:
 	Position* pos;

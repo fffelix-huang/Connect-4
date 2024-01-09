@@ -1,18 +1,21 @@
 #include "mcts.hpp"
 
+#include <iostream>
 #include <cassert>
 #include <limits>
 #include <cmath>
+#include <random>
+#include <chrono>
 
 namespace felix {
 
 namespace MCTS {
 
-Node::Node() : parent(nullptr), move_from_parent(-1), pos(nullptr), list(nullptr), score(0), simulations(0), children() {}
+Node::Node() : parent(nullptr), move_from_parent(-1), pos(nullptr), list(), score(0), simulations(0), children() {}
 
-Node::Node(Position* p) : parent(nullptr), move_from_parent(-1), pos(p), list(nullptr), score(0), simulations(0), children() {}
+Node::Node(Position* p) : parent(nullptr), move_from_parent(-1), pos(p), list(p), score(0), simulations(0), children() {}
 
-Node::Node(Node* par, Move mfp, Position* p) : parent(par), move_from_parent(mfp), pos(p), list(nullptr), score(0), simulations(0), children() {}
+Node::Node(Node* par, Move mfp, Position* p) : parent(par), move_from_parent(mfp), pos(p), list(p), score(0), simulations(0), children() {}
 
 Node::~Node() {}
 
@@ -22,7 +25,72 @@ double Node::calculateUCB(double C = 2) const {
 	if(simulations == 0) {
 		return INF;
 	}
-	return winRate() + C * std::sqrt(std::log(parent->nbSimulations()) / simulations);
+	return (1 - winRate()) + C * std::sqrt(std::log(parent->nbSimulations()) / simulations);
+}
+
+Node* Node::select() {
+	if(!isFullyExpanded()) {
+		int id = list.total() - list.size();
+		Move move = list.nextMove();
+		Position* new_pos = new Position(*pos);
+		new_pos->play(move);
+		children[id] = new Node(this, move, new_pos);
+		return children[id];
+	}
+	if(pos->isTerminal()) {
+		return this;
+	}
+	double best_ucb = 0;
+	Node* best_child = nullptr;
+	for(int i = 0; i < list.total(); i++) {
+		double cur_ucb = children[i]->calculateUCB(1.414);
+		if(cur_ucb > best_ucb) {
+			best_ucb = cur_ucb;
+			best_child = children[i];
+		}
+	}
+	return best_child->select();
+}
+
+bool Node::isFullyExpanded() const {
+	return list.empty();
+}
+
+double Node::rollout() const {
+	auto rng = [](int l, int r) {
+		static std::mt19937 gen(std::chrono::steady_clock::now().time_since_epoch().count());
+		return std::uniform_int_distribution<>(l, r)(gen);
+	};
+	Position game = Position(*pos);
+	while(!game.isTerminal()) {
+		MoveList moves(&game);
+		Move move = moves.getMove(rng(0, moves.total()));
+		game.play(move);
+	}
+	if(game.isDraw()) {
+		return 0.5;
+	}
+	if(pos->nbMoves() % 2 == game.nbMoves() % 2) {
+		// Lose
+		return 0;
+	} else {
+		// Win
+		return 1;
+	}
+}
+
+void Node::backpropagate(double w, int n) {
+	score += w;
+	simulations += n;
+	if(parent != nullptr) {
+		parent->backpropagate(n - w, n);
+	}
+}
+
+void Node::simulate() {
+	Node* leaf = select();
+	double result = leaf->rollout();
+	leaf->backpropagate(result, 1);
 }
 
 Move Node::getBestMove() const {
@@ -36,6 +104,13 @@ Move Node::getBestMove() const {
 		}
 	}
 	return best_move;
+}
+
+void Node::info(std::ostream& out) const {
+	out << "Number of simulations: " << simulations << std::endl;
+	for(int i = 0; i < list.total(); i++) {
+		out << "Move " << list.getMove(i) << ": " << children[i]->winRate() << " " << children[i]->nbSimulations() << std::endl;
+	}
 }
 
 } // namespace MCTS

@@ -1,6 +1,7 @@
 #ifndef MCTS_HPP
 #define MCTS_HPP
 
+#include <iostream>
 #include <vector>
 
 #include "move.hpp"
@@ -22,22 +23,27 @@ public:
 		return score / simulations;
 	}
 
+	void simulate();
+
 	Move getBestMove() const;
 
 	int nbSimulations() const {
 		return simulations;
 	}
 
+	void info(std::ostream&) const;
+
 private:
-	bool isLeaf() const { return true; } // TODO
 	double calculateUCB(double) const;
-	Node* select() const;
-	void isFullyExpand
+	Node* select();
+	bool isFullyExpanded() const;
+	double rollout() const;
+	void backpropagate(double w, int n);
 
 	Node* parent;
 	Move move_from_parent;
 	Position* pos;
-	MoveList* list;
+	MoveList list;
 	double score;
 	int simulations;
 	Node* children[Position::WIDTH];
