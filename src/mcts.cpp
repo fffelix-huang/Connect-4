@@ -93,6 +93,14 @@ void Node::simulate() {
 	leaf->backpropagate(result, 1);
 }
 
+Node* Node::advanceTree(Move move) const {
+	for(int i = 0; i < list.total(); i++) {
+		if(list.getMove(i) == move) {
+			return children[i];
+		}
+	}
+}
+
 Move Node::getBestMove() const {
 	double best_rate = 100;
 	Move best_move = -1;

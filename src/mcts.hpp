@@ -27,6 +27,8 @@ public:
 
 	Move getBestMove() const;
 
+	Node* advanceTree(Move move) const;
+
 	int nbSimulations() const {
 		return simulations;
 	}
