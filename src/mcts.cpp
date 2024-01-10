@@ -64,7 +64,7 @@ double Node::rollout() const {
 	Position game = Position(*pos);
 	while(!game.isTerminal()) {
 		MoveList moves(&game);
-		Move move = moves.getMove(rng(0, moves.total()));
+		Move move = moves.getMove(rng(0, moves.total() - 1));
 		game.play(move);
 	}
 	if(game.isDraw()) {
@@ -96,6 +96,7 @@ void Node::simulate() {
 Node* Node::advanceTree(Move move) const {
 	for(int i = 0; i < list.total(); i++) {
 		if(list.getMove(i) == move) {
+			children[i]->parent = nullptr;
 			return children[i];
 		}
 	}
