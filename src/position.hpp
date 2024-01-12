@@ -33,7 +33,7 @@ public:
 	static constexpr int MIN_SCORE = -(WIDTH * HEIGHT) / 2 + 3;
 	static constexpr int MAX_SCORE = (WIDTH * HEIGHT + 1) / 2 - 3;
 
-	Position() : current_position(0), mask(0), moves(0), result(3) {}
+	Position() : current_position(0), mask(0), moves(0), pass_moves(0), result(3) {}
 
 	// Returns true if the column is playable.
 	bool canPlay(Move col) const {
@@ -41,6 +41,12 @@ public:
 			return false;
 		}
 		return (mask & top_mask(col)) == 0;
+	}
+
+	void pass() {
+		current_position ^= mask;
+		moves++;
+		pass_moves++;
 	}
 
 	// Place a piece at the given column.
@@ -51,7 +57,7 @@ public:
 		current_position ^= mask;
 		mask |= mask + bottom_mask(col);
 		moves++;
-		if(moves == Position::HEIGHT * Position::WIDTH) {
+		if(moves - pass_moves == Position::HEIGHT * Position::WIDTH) {
 			result = 2;
 		}
 	}
@@ -86,6 +92,7 @@ private:
 	bitboard_t current_position;
 	bitboard_t mask;
 	int moves;
+	int pass_moves;
 	int result; // 2: draw, 3: non-terminal
 
 	// Given bitboard of one player's cells, returns true if the player has a 4-alignment;
