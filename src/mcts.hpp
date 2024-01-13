@@ -29,9 +29,12 @@ public:
 
 	Node* advanceTree(Move move) const;
 
-	int nbSimulations() const {
-		return simulations;
-	}
+	bool isTerminal() const { return pos->isTerminal(); }
+	bool isDraw() const { return pos->isDraw(); }
+
+	void display(std::ostream& out) const { pos->display(out); }
+
+	int nbSimulations() const { return simulations; }
 
 	void info(std::ostream&) const;
 

@@ -1,6 +1,7 @@
 #include "mcts.hpp"
 
 #include <iostream>
+#include <iomanip>
 #include <cassert>
 #include <limits>
 #include <cmath>
@@ -96,6 +97,11 @@ void Node::simulate() {
 Node* Node::advanceTree(Move move) const {
 	for(int i = 0; i < list.total(); i++) {
 		if(list.getMove(i) == move) {
+			if(i >= list.total() - list.size()) {
+				Position* new_pos = new Position(*pos);
+				new_pos->play(move);
+				return new Node(new_pos);
+			}
 			children[i]->parent = nullptr;
 			return children[i];
 		}
@@ -117,9 +123,12 @@ Move Node::getBestMove() const {
 
 void Node::info(std::ostream& out) const {
 	out << "Number of simulations: " << simulations << std::endl;
+	double win_rate = 100;
 	for(int i = 0; i < list.total(); i++) {
 		out << "Move " << list.getMove(i) << ": " << children[i]->winRate() << " " << children[i]->nbSimulations() << std::endl;
+		win_rate = std::min(win_rate, children[i]->winRate());
 	}
+	out << "Win Rate: " << std::fixed << std::setprecision(2) << (1 - win_rate) * 100 << "%" << std::endl;
 }
 
 } // namespace MCTS

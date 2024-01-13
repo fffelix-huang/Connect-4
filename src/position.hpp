@@ -1,6 +1,7 @@
 #ifndef POSITION_HPP
 #define POSITION_HPP
 
+#include <iostream>
 #include <cassert>
 #include <cstdint>
 #include <type_traits>
@@ -52,7 +53,7 @@ public:
 	// Place a piece at the given column.
 	void play(Move col) {
 		if(isWinningMove(col)) {
-			result = moves % 2;
+			result = nbMoves() % 2;
 		}
 		current_position ^= mask;
 		mask |= mask + bottom_mask(col);
@@ -87,6 +88,24 @@ public:
 	bool isTerminal() const { return result != 3; }
 	bool isDraw() const { return result == 2; }
 	int winner() const { return result; }
+
+	void display(std::ostream& out) const {
+		for(int i = 0; i < Position::WIDTH; i++) {
+			out << i << " ";
+		}
+		out << std::endl;
+		for(int i = 0, start_id = Position::HEIGHT - 1; i < Position::HEIGHT; i++, start_id--) {
+			for(int j = 0, id = start_id; j < Position::WIDTH; j++, id += Position::HEIGHT + 1) {
+				if(mask >> id & 1) {
+					out << "XO"[(current_position >> id & 1) ^ (nbMoves() % 2)];
+				} else {
+					out << ".";
+				}
+				out << " ";
+			}
+			out << std::endl;
+		}
+	}
 
 private:
 	bitboard_t current_position;
