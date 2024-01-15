@@ -23,8 +23,6 @@ public:
 	bool empty() const { return head == tail; }
 	int total() const { return tail; }
 
-	void sort(); // Sort moves heuristically.
-
 	Move nextMove() { return move[head++]; }
 	Move getMove(int i) const { return move[i]; }
 

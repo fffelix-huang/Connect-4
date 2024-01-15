@@ -4,7 +4,7 @@
 
 EXE = a
 
-OBJS = main.o benchmark.o mcts.o movelist.o
+OBJS = main.o
 
 
 ###
